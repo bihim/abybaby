@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:abybaby/controller/attendance_controller.dart';
 import 'package:abybaby/global/global.dart';
 import 'package:abybaby/model/month_report_model.dart';
@@ -51,49 +50,52 @@ class AttendanceScreen extends StatelessWidget {
                       "assets/abybaby.png",
                     ),
                     _attendanceSummery(context),
-                    Padding(
-                      padding: EdgeInsets.all(2.h),
-                      child: Card(
-                        elevation: 2.h,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            3.h,
-                          ),
-                        ),
-                        child: Container(
-                          height: 65.h,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              2.h,
-                            ),
-                            color: Colors.white,
-                          ),
-                          child: Column(
-                            children: [
-                              Obx(() => _calendar()),
-                              SizedBox(
-                                height: 1.h,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  _status(Colors.green, "Present"),
-                                  _status(Colors.red, "Absent"),
-                                  _status(Colors.orange, "Holiday"),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    //_calendarAll(),
                   ],
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Padding _calendarAll() {
+    return Padding(
+      padding: EdgeInsets.all(2.h),
+      child: Card(
+        elevation: 2.h,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            3.h,
+          ),
+        ),
+        child: Container(
+          height: 65.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              2.h,
+            ),
+            color: Colors.white,
+          ),
+          child: Column(
+            children: [
+              Obx(() => _calendar()),
+              SizedBox(
+                height: 1.h,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _status(Colors.green, "Present"),
+                  _status(Colors.red, "Absent"),
+                  _status(Colors.orange, "Holiday"),
+                ],
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -139,20 +141,38 @@ class AttendanceScreen extends StatelessWidget {
                         Text(
                           "Date: ${data.date.year}, ${data.date.month}, ${data.date.day}",
                         ),
+                        SizedBox(
+                          height: 2.h,
+                        ),
                         Text(
                           "Clock In: ${data.clockIn}",
+                        ),
+                        SizedBox(
+                          height: 2.h,
                         ),
                         Text(
                           "Clock out: ${data.clockOut}",
                         ),
+                        SizedBox(
+                          height: 2.h,
+                        ),
                         Text(
                           "Early leave: ${data.earlyLeaving}",
                         ),
-                        Text(
-                          "Overtime: ${data.overtime}",
+                        SizedBox(
+                          height: 2.h,
                         ),
                         Text(
                           "Overtime: ${data.overtime}",
+                        ),
+                        SizedBox(
+                          height: 2.h,
+                        ),
+                        Text(
+                          "Total Rest: ${data.totalRest}",
+                        ),
+                        SizedBox(
+                          height: 2.h,
                         ),
                         Text(
                           "Status: ${data.status}",
@@ -162,12 +182,11 @@ class AttendanceScreen extends StatelessWidget {
                   );
                 }
               }
-            }
-            else{
-               Get.defaultDialog(
-              title: "Attendance",
-              middleText: "No data available",
-            );
+            } else {
+              Get.defaultDialog(
+                title: "Attendance",
+                middleText: "No data available",
+              );
             }
           }
           print(dateTime.day);
@@ -352,10 +371,10 @@ class AttendanceScreen extends StatelessWidget {
                           }); */
                           _attendanceController.dateTime.value =
                               "${_attendanceController.getMonthName(dateTime)}, ${dateTime.year}";
-                          _attendanceController.cellCalendarPageController
+                          /* _attendanceController.cellCalendarPageController
                               .animateToDate(dateTime,
                                   duration: const Duration(milliseconds: 500),
-                                  curve: Curves.bounceIn);
+                                  curve: Curves.bounceIn); */
                           _attendanceController.selectedDateTime.value =
                               dateTime;
                           _attendanceController.getMonthReport();
@@ -390,37 +409,146 @@ class AttendanceScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Total Working Days: 20 days",
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
-                    Text(
-                      "Days Present: 17 days",
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
+                    Obx(() => Text(
+                          "Total Working Days: ${DateTime(_attendanceController.selectedDateTime.value.year, _attendanceController.selectedDateTime.value.month + 1, 0).day}",
+                          style: TextStyle(fontSize: 14.sp),
+                        )),
+                    Obx(() => Text(
+                          _attendanceController.responseString.value == ""
+                              ? "Days Present: 0"
+                              : "Days Present: ${MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length}",
+                          style: TextStyle(fontSize: 14.sp),
+                        )),
                   ],
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(2.h),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      "Total Days Late: 04 days",
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
-                    Text(
-                      "Days Absent: 03 days",
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
+                    Obx(() => Text(
+                          _attendanceController.responseString.value == ""
+                              ? "Days Absent: 0"
+                              : "Days Absent: ${(DateTime(_attendanceController.selectedDateTime.value.year, _attendanceController.selectedDateTime.value.month + 1, 0).day) - (MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length)}",
+                          style: TextStyle(fontSize: 14.sp),
+                        )),
                   ],
                 ),
               ),
+              Obx(() => SizedBox(
+                    child: _attendanceController.isDateLoading.value == false
+                        ? const SizedBox()
+                        : const CircularProgressIndicator(
+                            color: GlobalVals.arcColor,
+                          ),
+                  )),
+              Obx(
+                () => SizedBox(
+                  child: _attendanceController.responseString.value == ""
+                      ? const SizedBox()
+                      : Column(
+                          children: [
+                            SizedBox(
+                              height: 3.h,
+                            ),
+                            Container(
+                              color: GlobalVals.arcColor,
+                              padding: EdgeInsets.symmetric(vertical: 2.h),
+                              child: Row(
+                                children: const [
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      "Date",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      "Clock In",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      "Clock Out",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ListView.separated(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: MonthReportModel.fromJson(json.decode(
+                                      _attendanceController
+                                          .responseString.value))
+                                  .data
+                                  .length,
+                              itemBuilder: (context, index) {
+                                var _value = MonthReportModel.fromJson(
+                                        json.decode(_attendanceController
+                                            .responseString.value))
+                                    .data;
+                                return Container(
+                                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        flex: 1,
+                                        child: Text(
+                                          "${_value[index].date.day}/${_value[index].date.month}/${_value[index].date.year}",
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Text(
+                                          _value[index].clockIn,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Text(
+                                          _value[index].clockOut,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) {
+                                return Container(
+                                  color: Colors.grey.shade300,
+                                  height: 0.2.h,
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                ),
+              )
             ],
           ),
         ),
       ),
     );
   }
+
+  int daysInMonth(DateTime date) => DateTimeRange(
+          start: DateTime(date.year, date.month, 1),
+          end: DateTime(date.year, date.month + 1))
+      .duration
+      .inDays;
 }

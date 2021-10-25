@@ -187,9 +187,19 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Obx(
                       () => ElevatedButton(
-                        onPressed: _homeScreenController.isClockable.value ==
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                            _homeScreenController.isClockable.value == true
+                                ? Colors.green
+                                : GlobalVals.arcColor,
+                          ),
+                        ),
+                        onPressed: _homeScreenController.isClockLoaded.value == false ? null : _homeScreenController.isClockable.value ==
                                 false
-                            ? null
+                            ? () {
+                                Fluttertoast.showToast(
+                                    msg: "You can not start your clock now");
+                              }
                             : () async {
                                 var _result =
                                     await _homeScreenController.setAttendance();
@@ -200,6 +210,7 @@ class HomeScreen extends StatelessWidget {
                                   if (_result.response == "success") {
                                     Fluttertoast.showToast(
                                         msg: _result.message);
+                                    _homeScreenController.getClockIn();
                                   }
                                 }
                               },
@@ -227,14 +238,20 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Column(
                           children: [
-                            Obx(
-                              () => Text(
-                                "${_homeScreenController.timeDifInHour} : ${_homeScreenController.timeDifInMinute} : ${_homeScreenController.timeDifInSeconds}",
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            StreamBuilder(
+                              stream:
+                                  Stream.periodic(const Duration(seconds: 1)),
+                              builder: (context, snapshot) {
+                                return Center(
+                                  child: Text(
+                                    "${DateTime.now().hour} : ${DateTime.now().minute} : ${DateTime.now().second}",
+                                    style: TextStyle(
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                             SizedBox(
                               height: 0.5.h,
@@ -350,13 +367,13 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                             ),
-                            Text(
+                            /* Text(
                               "AB-00001",
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: Colors.grey,
                               ),
-                            ),
+                            ), */
                           ],
                         ),
                       ),

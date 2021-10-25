@@ -6,6 +6,7 @@ class GlobalVals {
   static const timeEndPoint = "timing";
   static const attendanceEndPoint = "attendance";
   static const monthEndPoint = "month-report";
+  static const checkAttendanceEndPoint = "check-attendance";
 
   //?Keys
   static const keyLog = "loggedIn";

@@ -89,7 +89,9 @@ class AttendanceController extends GetxController {
       _logger.e(e.toString());
       _logger.d("I am in catch");
       isNull.value = true;
-      Fluttertoast.showToast(msg: e.toString());
+      isDateLoading.value = false;
+      responseString.value = "";
+      //Fluttertoast.showToast(msg: e.toString());
     }
   }
 }
