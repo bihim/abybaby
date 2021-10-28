@@ -5,6 +5,7 @@ import 'package:abybaby/model/otp_model.dart';
 import 'package:abybaby/routes/routes.dart';
 import 'package:abybaby/view/components/arc_clipper.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hive/hive.dart';
@@ -43,7 +44,10 @@ class OtpScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Image.asset(
-                  "assets/abybaby.png",
+                  "assets/logo.png",
+                  height: 12.h,
+                  width: 79.w,
+                  fit: BoxFit.fill,
                 ),
                 Image.asset(
                   "assets/run.png",
@@ -107,8 +111,10 @@ class OtpScreen extends StatelessWidget {
                                       .data
                                       .first;
                               if (_data.otp == int.parse(v)) {
-                                Get.offNamed(Routes.home);
+                                Get.offAllNamed(Routes.home);
                                 _boxes.write(GlobalVals.keyLog, true);
+                              } else {
+                                Fluttertoast.showToast(msg: "OTP Mismatch");
                               }
                             },
                             onChanged: (value) {

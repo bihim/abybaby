@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         bool _isLoggedIn = _box.read(GlobalVals.keyLog) ?? false;
         _hiveBox(_isLoggedIn);
         return GetMaterialApp(
-          title: "AbyBaby Attendance",
+          title: "Abybaby Attendance",
           theme: ThemeData(
             primarySwatch: Colors.deepPurple,
             appBarTheme: const AppBarTheme(

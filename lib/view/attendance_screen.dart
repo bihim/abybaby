@@ -7,6 +7,7 @@ import 'package:cell_calendar/cell_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'components/arc_clipper.dart';
 import 'package:flutter_cupertino_date_picker_fork/flutter_cupertino_date_picker_fork.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_cupertino_date_picker_fork/flutter_cupertino_date_picker
 class AttendanceScreen extends StatelessWidget {
   final AttendanceController _attendanceController =
       Get.put(AttendanceController());
+  var _logger = Logger();
   AttendanceScreen({Key? key}) : super(key: key);
 
   @override
@@ -47,7 +49,10 @@ class AttendanceScreen extends StatelessWidget {
                       height: 3.h,
                     ),
                     Image.asset(
-                      "assets/abybaby.png",
+                      "assets/logo.png",
+                      height: 12.h,
+                      width: 79.w,
+                      fit: BoxFit.fill,
                     ),
                     _attendanceSummery(context),
                     //_calendarAll(),
@@ -298,7 +303,7 @@ class AttendanceScreen extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(2.h),
       child: Card(
-        elevation: 2.h,
+        elevation: 1.h,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
             3.h,
@@ -410,32 +415,31 @@ class AttendanceScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Obx(() => Text(
-                          "Total Working Days: ${DateTime(_attendanceController.selectedDateTime.value.year, _attendanceController.selectedDateTime.value.month + 1, 0).day}",
+                          _attendanceController.responseString.value == ""
+                              ? "No summery available"
+                              : "Days Absent: ${(DateTime.now().day) - (MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length)}",
                           style: TextStyle(fontSize: 14.sp),
                         )),
                     Obx(() => Text(
                           _attendanceController.responseString.value == ""
-                              ? "Days Present: 0"
+                              ? ""
                               : "Days Present: ${MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length}",
                           style: TextStyle(fontSize: 14.sp),
                         )),
                   ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.all(2.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Obx(() => Text(
-                          _attendanceController.responseString.value == ""
-                              ? "Days Absent: 0"
-                              : "Days Absent: ${(DateTime(_attendanceController.selectedDateTime.value.year, _attendanceController.selectedDateTime.value.month + 1, 0).day) - (MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length)}",
-                          style: TextStyle(fontSize: 14.sp),
-                        )),
-                  ],
-                ),
-              ),
+              /* Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Obx(() => Text(
+                        _attendanceController.responseString.value == ""
+                            ? ""
+                            : "Days Absent: ${(DateTime.now().day) - (MonthReportModel.fromJson(json.decode(_attendanceController.responseString.value)).data.length)}",
+                        style: TextStyle(fontSize: 14.sp),
+                      )),
+                ],
+              ), */
               Obx(() => SizedBox(
                     child: _attendanceController.isDateLoading.value == false
                         ? const SizedBox()
@@ -450,7 +454,7 @@ class AttendanceScreen extends StatelessWidget {
                       : Column(
                           children: [
                             SizedBox(
-                              height: 3.h,
+                              height: 1.h,
                             ),
                             Container(
                               color: GlobalVals.arcColor,
@@ -484,56 +488,63 @@ class AttendanceScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            ListView.separated(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: MonthReportModel.fromJson(json.decode(
-                                      _attendanceController
-                                          .responseString.value))
-                                  .data
-                                  .length,
-                              itemBuilder: (context, index) {
-                                var _value = MonthReportModel.fromJson(
+                            MediaQuery.removePadding(
+                              context: context,
+                              removeTop: true,
+                              child: ListView.separated(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: MonthReportModel.fromJson(
                                         json.decode(_attendanceController
                                             .responseString.value))
-                                    .data;
-                                return Container(
-                                  padding: EdgeInsets.symmetric(vertical: 2.h),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Text(
-                                          "${_value[index].date.day}/${_value[index].date.month}/${_value[index].date.year}",
-                                          textAlign: TextAlign.center,
+                                    .data
+                                    .length,
+                                itemBuilder: (context, index) {
+                                  var _value = MonthReportModel.fromJson(
+                                          json.decode(_attendanceController
+                                              .responseString.value))
+                                      .data;
+                                  _logger.d(
+                                      "${_value[index].date.day}/${_value[index].date.month}/${_value[index].date.year}");
+                                  return Container(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 2.h),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            "${_value[index].date.day}/${_value[index].date.month}/${_value[index].date.year}",
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Text(
-                                          _value[index].clockIn,
-                                          textAlign: TextAlign.center,
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            _value[index].clockIn,
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Text(
-                                          _value[index].clockOut,
-                                          textAlign: TextAlign.center,
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            _value[index].clockOut,
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              separatorBuilder: (context, index) {
-                                return Container(
-                                  color: Colors.grey.shade300,
-                                  height: 0.2.h,
-                                );
-                              },
+                                      ],
+                                    ),
+                                  );
+                                },
+                                separatorBuilder: (context, index) {
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    height: 0.2.h,
+                                  );
+                                },
+                              ),
                             )
                           ],
                         ),

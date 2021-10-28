@@ -18,6 +18,7 @@ import 'components/arc_clipper.dart';
 class HomeScreen extends StatelessWidget {
   final HomeScreenController _homeScreenController =
       Get.put(HomeScreenController());
+  final _logger = Logger();
   HomeScreen({Key? key}) : super(key: key);
 
   @override
@@ -52,7 +53,10 @@ class HomeScreen extends StatelessWidget {
                       height: 7.h,
                     ),
                     Image.asset(
-                      "assets/abybaby.png",
+                      "assets/logo.png",
+                      height: 12.h,
+                      width: 79.w,
+                      fit: BoxFit.fill,
                     ),
                     _profileInfo(),
                     _officeHours(),
@@ -189,31 +193,10 @@ class HomeScreen extends StatelessWidget {
                       () => ElevatedButton(
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                            _homeScreenController.isClockable.value == true
-                                ? Colors.green
-                                : GlobalVals.arcColor,
+                            _buttonColor(),
                           ),
                         ),
-                        onPressed: _homeScreenController.isClockLoaded.value == false ? null : _homeScreenController.isClockable.value ==
-                                false
-                            ? () {
-                                Fluttertoast.showToast(
-                                    msg: "You can not start your clock now");
-                              }
-                            : () async {
-                                var _result =
-                                    await _homeScreenController.setAttendance();
-                                if (_result == null) {
-                                  Fluttertoast.showToast(
-                                      msg: "Attendance could not be set");
-                                } else {
-                                  if (_result.response == "success") {
-                                    Fluttertoast.showToast(
-                                        msg: _result.message);
-                                    _homeScreenController.getClockIn();
-                                  }
-                                }
-                              },
+                        onPressed: () => _voidCallBacks(),
                         child: _homeScreenController
                                     .isAttendanceSubmittedLoading.value ==
                                 true
@@ -221,9 +204,7 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.white,
                               )
                             : Text(
-                                _homeScreenController.isClockable.value == true
-                                    ? "Clock In"
-                                    : "Clock Out",
+                                _homeScreenController.buttonText.value,
                               ),
                       ),
                     ),
@@ -242,6 +223,9 @@ class HomeScreen extends StatelessWidget {
                               stream:
                                   Stream.periodic(const Duration(seconds: 1)),
                               builder: (context, snapshot) {
+                                if (DateTime.now().hour == 0) {
+                                  _homeScreenController.getClockIn();
+                                }
                                 return Center(
                                   child: Text(
                                     "${DateTime.now().hour} : ${DateTime.now().minute} : ${DateTime.now().second}",
@@ -296,6 +280,37 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Color _buttonColor() {
+    if (_homeScreenController.buttonText.value == "Clock Out") {
+      return Colors.red;
+    } else if (_homeScreenController.buttonText.value == "Complete") {
+      return Colors.grey.shade400;
+    } else {
+      return Colors.green;
+    }
+  }
+
+  _voidCallBacks() async {
+    _logger.d("Clock press");
+    if (_homeScreenController.buttonText.value == "Clock-out") {
+      _setAttendance();
+    } else if (_homeScreenController.buttonText.value == "Complete") {
+      return null;
+    } else {
+      _setAttendance();
+    }
+  }
+
+  _setAttendance() async {
+    var _result = await _homeScreenController.setAttendance();
+    if (_result!.response == "success") {
+      Fluttertoast.showToast(msg: _result.message);
+      _homeScreenController.getClockIn();
+    } else {
+      Fluttertoast.showToast(msg: _result.message);
+    }
+  }
+
   Padding _profileInfo() {
     var _box = Hive.box(GlobalVals.userValues);
     String _getResult = _box.get(GlobalVals.keyValues);
@@ -324,15 +339,32 @@ class HomeScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    3.h,
+                Container(
+                  height: 20.h,
+                  width: 37.w,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      3.h,
+                    ),
+                    color: GlobalVals.arcColor,
                   ),
-                  child: Image.asset(
-                    "assets/john_doe.jpg",
-                    height: 20.h,
-                    width: 37.w,
-                  ),
+                  child: _data.image != ""
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            3.h,
+                          ),
+                          child: Image.network(
+                            _data.image,
+                            height: 20.h,
+                            width: 37.w,
+                            fit: BoxFit.fill,
+                          ),
+                        )
+                      : Icon(
+                          Icons.person,
+                          size: 15.h,
+                          color: Colors.white,
+                        ),
                 ),
                 SizedBox(
                   height: 20.h,
@@ -367,13 +399,13 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                             ),
-                            /* Text(
-                              "AB-00001",
+                            Text(
+                              _data.employeeIdDisplay,
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: Colors.grey,
                               ),
-                            ), */
+                            ),
                           ],
                         ),
                       ),

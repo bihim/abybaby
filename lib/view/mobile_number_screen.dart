@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:abybaby/api/api_requests.dart';
+import 'package:abybaby/controller/otp_controller.dart';
 import 'package:abybaby/global/global.dart';
 import 'package:abybaby/model/otp_model.dart';
 import 'package:abybaby/routes/routes.dart';
@@ -15,6 +16,7 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 
 class MobileNumberScreen extends StatelessWidget {
   final _textEditingController = TextEditingController();
+  final _otpController = Get.put(OtpController());
   final _loading = false.obs;
   MobileNumberScreen({Key? key}) : super(key: key);
 
@@ -45,7 +47,10 @@ class MobileNumberScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Image.asset(
-                  "assets/abybaby.png",
+                  "assets/logo.png",
+                  height: 12.h,
+                  width: 79.w,
+                  fit: BoxFit.fill,
                 ),
                 Image.asset(
                   "assets/run.png",
@@ -79,6 +84,7 @@ class MobileNumberScreen extends StatelessWidget {
                           ),
                           TextField(
                             controller: _textEditingController,
+                            keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(
                                 Icons.mobile_friendly,
@@ -101,33 +107,10 @@ class MobileNumberScreen extends StatelessWidget {
                             child: Obx(
                               () => ElevatedButton(
                                 onPressed: () async {
-                                  _loading.value = true;
-                                  var _getResult = await ApiRequest.getOtp(
-                                      _textEditingController.text);
-                                  if (_getResult == null) {
-                                    _loading.value = false;
-                                    Fluttertoast.showToast(msg: "Error");
-                                  } else {
-                                    _loading.value = false;
-                                    var _result = OtpModel.fromJson(
-                                        json.decode(_getResult));
-                                    if (_result.response == "success") {
-                                      var _logger = Logger();
-                                      /* _box.write(
-                                          GlobalVals.keyValues, _result); */
-                                      var _box = await Hive.openBox(
-                                          GlobalVals.userValues);
-                                      _box.put(GlobalVals.keyValues,
-                                          _getResult);
-                                      _logger.i(_result.data.first.otp);
-                                      Get.toNamed(Routes.otp);
-                                    } else {
-                                      Fluttertoast.showToast(
-                                          msg: _result.message);
-                                    }
-                                  }
+                                  _otpController
+                                      .getOtp(_textEditingController.text);
                                 },
-                                child: _loading.value == false
+                                child: _otpController.isLoading.value == false
                                     ? const Text("Get OTP")
                                     : const CircularProgressIndicator(
                                         color: Colors.white,

@@ -25,6 +25,7 @@ class HomeScreenController extends GetxController {
   var timeDifInHour = "00".obs;
   var timeDifInMinute = "00".obs;
   var timeDifInSeconds = "00".obs;
+  var buttonText = "Clock In".obs;
 
   @override
   void onInit() async {
@@ -40,8 +41,8 @@ class HomeScreenController extends GetxController {
               ', ' +
               position.longitude.toString());
 
-      print("Address: ${first.featureName} : ${first.addressLine}");
-      address.value = "Address: ${first.featureName} : ${first.addressLine}";
+      print("${first.addressLine}");
+      address.value = "${first.addressLine}";
       lat.value = position.latitude;
       long.value = position.longitude;
       latlong.value =
@@ -89,8 +90,13 @@ class HomeScreenController extends GetxController {
       isClockLoaded.value = true;
       var _result = ClockModel.fromJson(json.decode(response.body));
       if (_result.message == "Clock-out") {
+        buttonText.value = "Clock Out";
+        isClockable.value = true;
+      } else if (_result.message == "Complete") {
+        buttonText.value = "Complete";
         isClockable.value = false;
       } else {
+        buttonText.value = "Clock In";
         isClockable.value = true;
       }
     } else {
@@ -117,41 +123,6 @@ class HomeScreenController extends GetxController {
       var _nowEpoch = _now.millisecondsSinceEpoch;
       var _startTimeEpoch = _startTime.millisecondsSinceEpoch;
       var _endTimeEpoch = _endTime.millisecondsSinceEpoch;
-
-      /* if (_now.hour >= _startTime.hour) {
-        if (_now.hour <= _endTime.hour) {
-          if (_now.minute <= _endTime.minute) {
-            timeDifInHour.value =
-                _now.difference(_startTime).inHours.toString();
-            timeDifInMinute.value = _now.minute.toString();
-            timeDifInSeconds.value = _now.second.toString();
-            isClockable.value = true;
-            _logger.d("Clockable true in if->if->if");
-          } else {
-            isClockable.value = false;
-            _logger.d("Clockable false in if->if->else");
-          }
-        } else {
-          isClockable.value = false;
-          _logger.d("Clockable false in if->else");
-        }
-      } else {
-        isClockable.value = false;
-        _logger.d("Clockable false in else");
-      } */
-
-      /* if (_nowEpoch >= _startTimeEpoch && _nowEpoch <= _endTimeEpoch) {
-        timeDifInHour.value = _now.difference(_startTime).inHours.toString();
-        timeDifInMinute.value = _now.minute.toString();
-        timeDifInSeconds.value = _now.second.toString();
-        isClockable.value = true;
-        _logger.d("Epoch now: $_nowEpoch, startTime: $_startTimeEpoch and endTime: $_endTimeEpoch");
-        _logger.d("Clockable true in if");
-      } else {
-        isClockable.value = false;
-        _logger.d("Epoch now: $_nowEpoch, startTime: $_startTimeEpoch and endTime: $_endTimeEpoch");
-        _logger.d("Clockable false in else");
-      } */
 
       return TimeModel.fromJson(json.decode(response.body));
     } else {
